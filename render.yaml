@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: spotsync-api
+    runtime: go
+    plan: free
+    region: singapore
+
+    buildCommand: go build -o spotsync ./cmd
+    startCommand: ./spotsync
+
+    envVars:
+      - key: PORT
+        value: 4000
+
+      - key: DNS
+        sync: false
+
+      - key: JWT_SECRET
+        sync: false
+
+     
+
+    healthCheckPath: /

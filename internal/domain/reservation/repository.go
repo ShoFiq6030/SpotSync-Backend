@@ -8,8 +8,8 @@ import (
 )
 
 type Repository interface {
-    CreateReservation(userId uint, licensePlate string, zoneID uint)(*Reservation, error)
-   
+    CreateReservation(userId uint, licensePlate string, zoneID uint) (*Reservation, error)
+    GetMyReservations(userId uint) ([]Reservation, error)
 }
 
 type repository struct {
@@ -60,6 +60,15 @@ func (r *repository) CreateReservation( userId uint, licensePlate string, zoneID
     }
 
     return &reservation, nil
+}
 
+func (r *repository) GetMyReservations(userId uint) ([]Reservation, error) {
+    var reservations []Reservation
+
+    if err := r.db.Preload("Zone").Where("user_id = ?", userId).Order("created_at desc").Find(&reservations).Error; err != nil {
+        return nil, err
+    }
+
+    return reservations, nil
 }
 

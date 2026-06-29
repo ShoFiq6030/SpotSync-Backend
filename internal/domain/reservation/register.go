@@ -1,12 +1,12 @@
 package reservation
 
 import (
-    "SpotSync/internal/auth"
-    "SpotSync/internal/config"
-    "SpotSync/internal/middlewares"
+	"SpotSync/internal/auth"
+	"SpotSync/internal/config"
+	"SpotSync/internal/middlewares"
 
-    "github.com/labstack/echo/v5"
-    "gorm.io/gorm"
+	"github.com/labstack/echo/v5"
+	"gorm.io/gorm"
 )
 
 func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
@@ -17,4 +17,5 @@ func RegisterRoutes(e *echo.Echo, db *gorm.DB, cfg *config.Config) {
 
     api := e.Group("/api/v1/reservations")
     api.POST("", reservationHandler.CreateReservation, middlewares.AuthMiddleware(jwtService, "DRIVER", "ADMIN"))
+    api.GET("/my-reservations", reservationHandler.GetMyReservations, middlewares.AuthMiddleware(jwtService, "DRIVER", "ADMIN"))
 }

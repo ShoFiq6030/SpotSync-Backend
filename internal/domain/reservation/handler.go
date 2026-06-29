@@ -81,3 +81,33 @@ func (h *handler) CreateReservation(c *echo.Context) error {
         Data:    reservation,
     })
 }
+
+func (h *handler) GetMyReservations(c *echo.Context) error {
+    claims := c.Get("user_id")
+    userID, ok := claims.(uint)
+    if !ok {
+        return c.JSON(http.StatusUnauthorized, httpresponse.Error{
+            Success: false,
+            Code:    http.StatusUnauthorized,
+            Message: "Unauthorized",
+            Details: "user context is missing",
+        })
+    }
+
+    reservations, err := h.service.GetMyReservations(userID)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, httpresponse.Error{
+            Success: false,
+            Code:    http.StatusInternalServerError,
+            Message: "Failed to retrieve reservations",
+            Details: err.Error(),
+        })
+    }
+
+    return c.JSON(http.StatusOK, httpresponse.Success{
+        Success: true,
+        Code:    http.StatusOK,
+        Message: "My reservations retrieved successfully",
+        Data:    reservations,
+    })
+}

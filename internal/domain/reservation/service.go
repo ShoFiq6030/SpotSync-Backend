@@ -9,10 +9,14 @@ import (
 
 var ErrZoneFull = errors.New("parking zone is full")
 var ErrZoneNotFound = errors.New("parking zone not found")
+var ErrReservationNotFound = errors.New("reservation not found")
+var ErrForbiddenCancellation = errors.New("forbidden to cancel this reservation")
+var ErrCanceled = errors.New("Already canceled reservation cannot be canceled again")
 
 type Service interface {
     CreateReservation(userID uint, req dto.CreateReservationRequest) (*dto.ReservationResponse, error)
     GetMyReservations(userID uint) ([]dto.ReservationResponse, error)
+    CancelReservation(userID uint, role string, reservationID uint) error
 }
 
 type service struct {
@@ -45,4 +49,27 @@ func (s *service) GetMyReservations(userID uint) ([]dto.ReservationResponse, err
     }
 
     return responses, nil
+}
+
+func (s *service) CancelReservation(userID uint, role string, reservationID uint) error {
+    reservation, err := s.repo.GetReservationByID(reservationID)
+    if err != nil {
+        if err == gorm.ErrRecordNotFound {
+            return ErrReservationNotFound
+        }
+        return err
+    }
+
+    if role == "DRIVER" && reservation.UserID != userID {
+        return ErrForbiddenCancellation
+    }
+    if reservation.Status == "canceled" {
+        return ErrCanceled
+    }
+
+    if err := s.repo.CancelReservation(reservationID); err != nil {
+        return err
+    }
+
+    return nil
 }

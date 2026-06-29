@@ -10,6 +10,8 @@ import (
 type Repository interface {
     CreateReservation(userId uint, licensePlate string, zoneID uint) (*Reservation, error)
     GetMyReservations(userId uint) ([]Reservation, error)
+    GetReservationByID(reservationID uint) (*Reservation, error)
+    CancelReservation(reservationID uint) error
 }
 
 type repository struct {
@@ -70,5 +72,44 @@ func (r *repository) GetMyReservations(userId uint) ([]Reservation, error) {
     }
 
     return reservations, nil
+}
+
+func (r *repository) GetReservationByID(reservationID uint) (*Reservation, error) {
+    var reservation Reservation
+    if err := r.db.Preload("Zone").First(&reservation, reservationID).Error; err != nil {
+        return nil, err
+    }
+
+    return &reservation, nil
+}
+
+func (r *repository) CancelReservation(reservationID uint) error {
+    return r.db.Transaction(func(tx *gorm.DB) error {
+        var reservation Reservation
+        if err := tx.First(&reservation, reservationID).Error; err != nil {
+            return err
+        }
+
+        if reservation.Status == ReservationCanceled {
+            return nil
+        }
+
+        reservation.Status = ReservationCanceled
+        if err := tx.Save(&reservation).Error; err != nil {
+            return err
+        }
+
+        var zone parkingZone.ParkingZone
+        if err := tx.First(&zone, reservation.ZoneID).Error; err != nil {
+            return err
+        }
+
+        zone.TotalCapacity += 1
+        if err := tx.Save(&zone).Error; err != nil {
+            return err
+        }
+
+        return nil
+    })
 }
 

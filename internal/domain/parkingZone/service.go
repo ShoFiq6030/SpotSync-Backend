@@ -35,3 +35,31 @@ func (s *service) CreateParkingZone(req dto.CreateParkingZoneRequest) (*dto.Park
 	response := zone.ToResponse()
 	return &response, nil
 }
+
+func (s *service) GetParkingZones() ([]dto.ParkingZoneResponse, error) {
+	zones, err := s.repo.GetParkingZones()
+	if err != nil {
+		return nil, err
+	}
+
+	responses := make([]dto.ParkingZoneResponse, len(zones))
+	for i, zone := range zones {
+		responses[i] = zone.ToResponse()
+	}
+
+	return responses, nil
+}
+
+func (s *service) GetParkingZoneByID(id uint) (*dto.ParkingZoneResponse, error) {
+	zone, err := s.repo.GetParkingZoneByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if zone == nil {
+		return nil, nil
+	}
+
+	response := zone.ToResponse()
+	return &response, nil
+}

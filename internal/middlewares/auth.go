@@ -17,6 +17,7 @@ func AuthMiddleware(jwtService auth.JWTService, roles ...string  ) echo.Middlewa
 			authHeader := c.Request().Header.Get("Authorization")
 			if authHeader == "" {
 				return c.JSON(http.StatusUnauthorized,httpresponse.Error{
+					Success: false,
 					Code:    http.StatusUnauthorized,
 					Message: "unauthorized",
 					Details: "Missing authorization header",
@@ -28,6 +29,7 @@ func AuthMiddleware(jwtService auth.JWTService, roles ...string  ) echo.Middlewa
 
 			if len(parts) != 2 || parts[0] != "Bearer" {
 				return c.JSON(http.StatusUnauthorized,httpresponse.Error{
+					Success: false,
 					Code:    http.StatusUnauthorized,
 					Message: "unauthorized",
 					Details: "invalid authorization header format",
@@ -40,11 +42,12 @@ func AuthMiddleware(jwtService auth.JWTService, roles ...string  ) echo.Middlewa
 
 			claims, err := jwtService.ValidateToken(tokenString)
 			if err != nil {
-					return c.JSON(http.StatusUnauthorized,httpresponse.Error{
-						Code:    http.StatusUnauthorized,
-						Message: "unauthorized",
-						Details: "invalid or expired token",
-					})
+				return c.JSON(http.StatusUnauthorized,httpresponse.Error{
+					Success: false,
+					Code:    http.StatusUnauthorized,
+					Message: "unauthorized",
+					Details: "invalid or expired token",
+				})
 			}
 
 		if len(roles) > 0 {
@@ -59,6 +62,7 @@ func AuthMiddleware(jwtService auth.JWTService, roles ...string  ) echo.Middlewa
 
 		if !allowed {
 		return c.JSON(http.StatusForbidden,httpresponse.Error{
+			Success: false,
 			Code:    http.StatusForbidden,
 			Message: "forbidden",
 			Details: "you do not have permission to access this resource",

@@ -1,8 +1,8 @@
 package httpresponse
 
-type Error struct {
+type Success struct {
 	Success bool   `json:"success"`
 	Code    int    `json:"code"`
 	Message string `json:"message"`
-	Details string `json:"details,omitempty"`
+	Data	any    `json:"data,omitempty"`
 }

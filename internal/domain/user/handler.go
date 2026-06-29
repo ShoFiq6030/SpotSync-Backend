@@ -25,6 +25,7 @@ func (h *handler) CreateUser(c *echo.Context) error {
 
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, httpresponse.Error{
+			Success: false,
 			Code:    http.StatusBadRequest,
 			Message: "Invalid request payload",
 			Details: err.Error(),
@@ -33,6 +34,7 @@ func (h *handler) CreateUser(c *echo.Context) error {
 
 	if err := c.Validate(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, httpresponse.Error{
+			Success: false,
 			Code:    http.StatusBadRequest,
 			Message: "Validation failed",
 			Details: err.Error(),
@@ -44,6 +46,7 @@ func (h *handler) CreateUser(c *echo.Context) error {
 
 		if errors.Is(err, ErrorAlreadyExist) {
 			return c.JSON(http.StatusConflict, httpresponse.Error{
+				Success: false,
 				Code:    http.StatusConflict,
 				Message: "Failed to create User",
 				Details: err.Error(),
@@ -51,13 +54,19 @@ func (h *handler) CreateUser(c *echo.Context) error {
 		}
 
 		return c.JSON(http.StatusInternalServerError, httpresponse.Error{
+			Success: false,
 			Code:    http.StatusInternalServerError,
 			Message: "Failed to create user",
 			Details: err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusCreated, response)
+	return c.JSON(http.StatusCreated, httpresponse.Success{
+		Success: true,
+		Code:    http.StatusCreated,
+		Message: "User created successfully",
+		Data:    response,
+	})
 
 }
 
@@ -74,6 +83,7 @@ func (h *handler) LoginUser(c *echo.Context) error {
 
 	if err := c.Validate(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, httpresponse.Error{
+			Success: false,
 			Code:    http.StatusBadRequest,
 			Message: "Validation failed",
 			Details: err.Error(),
@@ -85,6 +95,7 @@ func (h *handler) LoginUser(c *echo.Context) error {
 	if err != nil {
 		if errors.Is(err, ErrInvalidCredentials) {
 			return c.JSON(http.StatusUnauthorized, httpresponse.Error{
+				Success: false,
 				Code:    http.StatusUnauthorized,
 				Message: "Cannot login user",
 				Details: err.Error(),
@@ -92,12 +103,18 @@ func (h *handler) LoginUser(c *echo.Context) error {
 		}
 
 		return c.JSON(http.StatusInternalServerError, httpresponse.Error{
+			Success: false,
 			Code:    http.StatusInternalServerError,
 			Message: "Failed to login user",
 			Details: err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, httpresponse.Success{
+		Success: true,
+		Code:    http.StatusOK,
+		Message: "User logged in successfully",
+		Data:    response,
+	})
 
 }

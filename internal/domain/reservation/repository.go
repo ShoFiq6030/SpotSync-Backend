@@ -12,6 +12,7 @@ type Repository interface {
     GetMyReservations(userId uint) ([]Reservation, error)
     GetReservationByID(reservationID uint) (*Reservation, error)
     CancelReservation(reservationID uint) error
+    GetAllReservations() ([]Reservation, error)
 }
 
 type repository struct {
@@ -67,7 +68,17 @@ func (r *repository) CreateReservation( userId uint, licensePlate string, zoneID
 func (r *repository) GetMyReservations(userId uint) ([]Reservation, error) {
     var reservations []Reservation
 
-    if err := r.db.Preload("Zone").Where("user_id = ?", userId).Order("created_at desc").Find(&reservations).Error; err != nil {
+    if err := r.db.Preload("Zone").Preload("User").Where("user_id = ?", userId).Order("created_at desc").Find(&reservations).Error; err != nil {
+        return nil, err
+    }
+
+    return reservations, nil
+}
+
+func (r *repository) GetAllReservations() ([]Reservation, error) {
+    var reservations []Reservation
+
+    if err := r.db.Preload("Zone").Preload("User").Order("created_at desc").Find(&reservations).Error; err != nil {
         return nil, err
     }
 

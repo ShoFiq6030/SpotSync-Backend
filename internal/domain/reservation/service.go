@@ -16,6 +16,7 @@ var ErrCanceled = errors.New("Already canceled reservation cannot be canceled ag
 type Service interface {
     CreateReservation(userID uint, req dto.CreateReservationRequest) (*dto.ReservationResponse, error)
     GetMyReservations(userID uint) ([]dto.ReservationResponse, error)
+    GetAllReservations() ([]dto.ReservationResponse, error)
     CancelReservation(userID uint, role string, reservationID uint) error
 }
 
@@ -39,6 +40,20 @@ func (s *service) CreateReservation(userID uint, req dto.CreateReservationReques
 
 func (s *service) GetMyReservations(userID uint) ([]dto.ReservationResponse, error) {
     reservations, err := s.repo.GetMyReservations(userID)
+    if err != nil {
+        return nil, err
+    }
+
+    responses := make([]dto.ReservationResponse, len(reservations))
+    for i, reservation := range reservations {
+        responses[i] = *reservation.ToResponse()
+    }
+
+    return responses, nil
+}
+
+func (s *service) GetAllReservations() ([]dto.ReservationResponse, error) {
+    reservations, err := s.repo.GetAllReservations()
     if err != nil {
         return nil, err
     }

@@ -3,6 +3,7 @@ package reservation
 import (
 	"SpotSync/internal/domain/parkingZone"
 	"SpotSync/internal/domain/reservation/dto"
+	"SpotSync/internal/domain/user"
 
 	"gorm.io/gorm"
 )
@@ -21,6 +22,7 @@ type Reservation struct {
 	ZoneID       uint              `json:"zone_id" gorm:"not null"`
 	LicensePlate string            `json:"license_plate" gorm:"type:varchar(15);not null"`
 	Status       ReservationStatus `json:"status" gorm:"type:varchar(20);not null;default:'active'"`
+	User         user.User          `json:"user,omitempty" gorm:"foreignKey:UserID"`
 	Zone         parkingZone.ParkingZone `json:"zone,omitempty" gorm:"foreignKey:ZoneID"`
 }
 
@@ -34,12 +36,23 @@ func (r *Reservation) ToResponse() *dto.ReservationResponse {
 		}
 	}
 
+	var user *dto.ReservationUserResponse
+	if r.User.ID != 0 {
+		user = &dto.ReservationUserResponse{
+			ID:    r.User.ID,
+			Name:  r.User.Name,
+			Email: r.User.Email,
+			Role:  r.User.Role,
+		}
+	}
+
 	return &dto.ReservationResponse{
 		ID:           r.ID,
 		UserID:       r.UserID,
 		ZoneID:       r.ZoneID,
 		LicensePlate: r.LicensePlate,
 		Status:       string(r.Status),
+		User:         user,
 		Zone:         zone,
 		CreatedAt:    r.CreatedAt.Format("2006-01-02T15:04:05Z"),
 		UpdatedAt:    r.UpdatedAt.Format("2006-01-02T15:04:05Z"),

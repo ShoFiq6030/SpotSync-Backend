@@ -186,3 +186,23 @@ func (h *handler) GetMyReservations(c *echo.Context) error {
         Data:    reservations,
     })
 }
+
+func (h *handler) GetAllReservations(c *echo.Context) error {
+    reservations, err := h.service.GetAllReservations()
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, httpresponse.Error{
+            Success: false,
+            Code:    http.StatusInternalServerError,
+            Message: "Failed to retrieve reservations",
+            Details: err.Error(),
+        })
+    }
+
+    return c.JSON(http.StatusOK, httpresponse.Success{
+        Success: true,
+        Code:    http.StatusOK,
+        Message: "All reservations retrieved successfully",
+        Data:    reservations,
+    })
+}
+

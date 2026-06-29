@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	
 	"os"
 
 	"github.com/joho/godotenv"
@@ -14,15 +14,19 @@ type Config struct {
 }
 
 func LoadEnv() *Config {
-
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	// Ignore the error if .env doesn't exist
+	_ = godotenv.Load()
 
 	return &Config{
-		Port:      os.Getenv("PORT"),
-		Dsn:       os.Getenv("DSN"),
-		JwtSecret: os.Getenv("JWT_SECRET"),
+		Port:      getEnv("PORT", "8080"),
+		Dsn:       getEnv("DSN", ""),
+		JwtSecret: getEnv("JWT_SECRET", ""),
 	}
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }
